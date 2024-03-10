@@ -84,6 +84,18 @@ class CrudGeneratorCommand extends Command
         $storeRequestContent .= "            // Add your validation rules here\n";
         $storeRequestContent .= "        ];\n";
         $storeRequestContent .= "    }\n";
+        $storeRequestContent .= "  public function attributes()\n";
+        $storeRequestContent .= "    {\n";
+        $storeRequestContent .= "        return [\n";
+        $storeRequestContent .= "            // Add your attributes here\n";
+        $storeRequestContent .= "        ];\n";
+        $storeRequestContent .= "    }\n";
+        $storeRequestContent .= "  public function messages()\n";
+        $storeRequestContent .= "    {\n";
+        $storeRequestContent .= "        return [\n";
+        $storeRequestContent .= "            // Add your messages here\n";
+        $storeRequestContent .= "        ];\n";
+        $storeRequestContent .= "    }\n";
         $storeRequestContent .= "}\n";
 
         file_put_contents($storeRequestPath, $storeRequestContent);
@@ -105,6 +117,18 @@ class CrudGeneratorCommand extends Command
         $updateRequestContent .= "            // Add your validation rules here\n";
         $updateRequestContent .= "        ];\n";
         $updateRequestContent .= "    }\n";
+        $updateRequestContent .= "  public function attributes()\n";
+        $updateRequestContent .= "    {\n";
+        $updateRequestContent .= "        return [\n";
+        $updateRequestContent .= "            // Add your attributes here\n";
+        $updateRequestContent .= "        ];\n";
+        $updateRequestContent .= "    }\n";
+        $updateRequestContent .= "  public function messages()\n";
+        $updateRequestContent .= "    {\n";
+        $updateRequestContent .= "        return [\n";
+        $updateRequestContent .= "            // Add your messages here\n";
+        $updateRequestContent .= "        ];\n";
+        $updateRequestContent .= "    }\n";
         $updateRequestContent .= "}\n";
 
         file_put_contents($updateRequestPath, $updateRequestContent);
@@ -113,6 +137,9 @@ class CrudGeneratorCommand extends Command
     protected function createController()
     {
         $name = $this->argument('name');
+
+        $names = Str::plural(Str::snake($name));
+
         $this->call('make:controller', ['name' => "Web/Admin/{$name}Controller", '--resource' => true]);
 
         $controllerPath = app_path("Http/Controllers/Web/Admin/{$name}Controller.php");
@@ -123,6 +150,7 @@ class CrudGeneratorCommand extends Command
         $controllerContent .= "use App\Http\Requests\\Store{$name}Request;\n";
         $controllerContent .= "use App\Http\Requests\\Update{$name}Request;\n";
         $controllerContent .= "use App\Interfaces\\{$name}RepositoryInterface;\n";
+        $controllerContent .= "use RealRashid\SweetAlert\Facades\Alert as Swal;\n";
         $controllerContent .= "use Illuminate\Http\Request;\n";
         $controllerContent .= "class {$name}Controller extends Controller\n";
         $controllerContent .= "{\n";
@@ -133,31 +161,42 @@ class CrudGeneratorCommand extends Command
         $controllerContent .= "    }\n\n";
         $controllerContent .= "    public function index(Request \$request)\n";
         $controllerContent .= "    {\n";
-        $controllerContent .= "        //add your code here\n";
+        $controllerContent .= "         \${$names} = \$this->{$name}Repository->getAll{$name}();\n";
+        $controllerContent .= "         return view('pages.admin.{$name}.index', compact('{$names}'));\n";
         $controllerContent .= "    }\n\n";
         $controllerContent .= "    public function create()\n";
         $controllerContent .= "    {\n";
-        $controllerContent .= "        //add your code here\n";
+        $controllerContent .= "       return view('pages.admin.{$name}.create');\n";
         $controllerContent .= "    }\n\n";
         $controllerContent .= "    public function store(Store{$name}Request \$request)\n";
         $controllerContent .= "    {\n";
-        $controllerContent .= "        //add your code here\n";
+        $controllerContent .= "        \$data = \$request->validated();\n";
+        $controllerContent .= "        \$this->{$name}Repository->create{$name}(\$data);\n";
+        $controllerContent .= "        Swal::toast('{$name} created successfully!', 'success')->timerProgressBar();\n";
+        $controllerContent .= "        return redirect()->route('{$name}.index');\n";
         $controllerContent .= "    }\n\n";
         $controllerContent .= "    public function show(\$id)\n";
         $controllerContent .= "    {\n";
-        $controllerContent .= "        //add your code here\n";
+        $controllerContent .= "      \${$name} = \$this->{$name}Repository->get{$name}ById(\$id);\n";
+        $controllerContent .= "      return view('pages.admin.{$name}.show', compact('{$name}'));\n";
         $controllerContent .= "    }\n\n";
         $controllerContent .= "    public function edit(\$id)\n";
         $controllerContent .= "    {\n";
-        $controllerContent .= "        //add your code here\n";
+        $controllerContent .= "      \${$name} = \$this->{$name}Repository->get{$name}ById(\$id);\n";
+        $controllerContent .= "      return view('pages.admin.{$name}.edit', compact('{$name}'));\n";
         $controllerContent .= "    }\n\n";
         $controllerContent .= "    public function update(Update{$name}Request \$request, \$id)\n";
         $controllerContent .= "    {\n";
-        $controllerContent .= "        //add your code here\n";
+        $controllerContent .= "        \$data = \$request->validated();\n";
+        $controllerContent .= "        \$this->{$name}Repository->update{$name}(\$data, \$id);\n";
+        $controllerContent .= "        Swal::toast('{$name} updated successfully!', 'success')->timerProgressBar();\n";
+        $controllerContent .= "        return redirect()->route('{$name}.index');\n";
         $controllerContent .= "    }\n\n";
         $controllerContent .= "    public function destroy(\$id)\n";
         $controllerContent .= "    {\n";
-        $controllerContent .= "        //add your code here\n";
+        $controllerContent .= "      \$this->{$name}Repository->delete{$name}(\$id);\n";
+        $controllerContent .= "      Swal::toast('{$name} deleted successfully!', 'success')->timerProgressBar();\n";
+        $controllerContent .= "      return redirect()->route('{$name}.index');\n";
         $controllerContent .= "    }\n";
         $controllerContent .= "}\n";
 
@@ -287,19 +326,19 @@ class CrudGeneratorCommand extends Command
         }
 
         $indexViewPath = $viewsPath . '/index.blade.php';
-        $indexViewContent = '<!-- Add your code here -->';
+        $indexViewContent = $this->generateIndexViewContent($name);
         file_put_contents($indexViewPath, $indexViewContent);
 
         $createViewPath = $viewsPath . '/create.blade.php';
-        $createViewContent = '<!-- Add your code here -->';
+        $createViewContent = $this->generateCreateViewContent($name);
         file_put_contents($createViewPath, $createViewContent);
 
         $editViewPath = $viewsPath . '/edit.blade.php';
-        $editViewContent = '<!-- Add your code here -->';
+        $editViewContent = $this->generateEditViewContent($name);
         file_put_contents($editViewPath, $editViewContent);
 
         $showViewPath = $viewsPath . '/show.blade.php';
-        $showViewContent = '<!-- Add your code here -->';
+        $showViewContent = $this->generateShowViewContent($name);
         file_put_contents($showViewPath, $showViewContent);
     }
 
@@ -315,13 +354,54 @@ class CrudGeneratorCommand extends Command
 
     protected function generateRepositoryContent($name)
     {
-        return "<?php\n\nnamespace App\Repositories;\n\nuse App\Interfaces\\{$name}RepositoryInterface;\n\n" .
-            "class {$name}Repository implements {$name}RepositoryInterface\n{\n" .
-            "    public function getAll{$name}()\n    {\n        // Add your code here\n    }\n\n" .
-            "    public function get{$name}ById(string \$id)\n    {\n        // Add your code here\n    }\n\n" .
-            "    public function create{$name}(array \$data)\n    {\n        // Add your code here\n    }\n\n" .
-            "    public function update{$name}(array \$data, string \$id)\n    {\n        // Add your code here\n    }\n\n" .
-            "    public function delete{$name}(string \$id)\n    {\n        // Add your code here\n    }\n}\n";
+        // return "<?php\n\nnamespace App\Repositories;\n\nuse App\Interfaces\\{$name}RepositoryInterface;\n\n" .
+        //     "class {$name}Repository implements {$name}RepositoryInterface\n{\n" .
+        //     "    public function getAll{$name}()\n    {\n        // Add your code here\n    }\n\n" .
+        //     "    public function get{$name}ById(string \$id)\n    {\n        // Add your code here\n    }\n\n" .
+        //     "    public function create{$name}(array \$data)\n    {\n        // Add your code here\n    }\n\n" .
+        //     "    public function update{$name}(array \$data, string \$id)\n    {\n        // Add your code here\n    }\n\n" .
+        //     "    public function delete{$name}(string \$id)\n    {\n        // Add your code here\n    }\n}\n";
+
+        $repositoryContent = "<?php\n\nnamespace App\Repositories;\n\nuse App\Interfaces\\{$name}RepositoryInterface;\n";
+        $repositoryContent .= "use App\Models\\{$name};\n";
+        $repositoryContent .= "use Illuminate\Support\Facades\DB;\n\n";
+        $repositoryContent .= "class {$name}Repository implements {$name}RepositoryInterface\n{\n";
+        $repositoryContent .= "    public function getAll{$name}()\n    {\n";
+        $repositoryContent .= "        return {$name}::all();\n    }\n\n";
+        $repositoryContent .= "    public function get{$name}ById(string \$id)\n    {\n";
+        $repositoryContent .= "        return {$name}::findOrFail(\$id);\n    }\n\n";
+        $repositoryContent .= "    public function create{$name}(array \$data)\n    {\n";
+        $repositoryContent .= "        DB::beginTransaction();\n";
+        $repositoryContent .= "        try {\n";
+        $repositoryContent .= "            $name = {$name}::create(\$data);\n";
+        $repositoryContent .= "            DB::commit();\n";
+        $repositoryContent .= "            return $name;\n";
+        $repositoryContent .= "        } catch (\Exception \$e) {\n";
+        $repositoryContent .= "            DB::rollBack();\n";
+        $repositoryContent .= "            return \$e->getMessage();\n";
+        $repositoryContent .= "        }\n    }\n\n";
+        $repositoryContent .= "    public function update{$name}(array \$data, string \$id)\n    {\n";
+        $repositoryContent .= "        DB::beginTransaction();\n";
+        $repositoryContent .= "        try {\n";
+        $repositoryContent .= "            $name = {$name}::findOrFail(\$id);\n";
+        $repositoryContent .= "            $name->update(\$data);\n";
+        $repositoryContent .= "            DB::commit();\n";
+        $repositoryContent .= "            return $name;\n";
+        $repositoryContent .= "        } catch (\Exception \$e) {\n";
+        $repositoryContent .= "            DB::rollBack();\n";
+        $repositoryContent .= "            return \$e->getMessage();\n";
+        $repositoryContent .= "        }\n    }\n\n";
+        $repositoryContent .= "    public function delete{$name}(string \$id)\n    {\n";
+        $repositoryContent .= "        DB::beginTransaction();\n";
+        $repositoryContent .= "        try {\n";
+        $repositoryContent .= "            $name = {$name}::findOrFail(\$id);\n";
+        $repositoryContent .= "            $name->delete();\n";
+        $repositoryContent .= "            DB::commit();\n";
+        $repositoryContent .= "            return $name;\n";
+        $repositoryContent .= "        } catch (\Exception \$e) {\n";
+        $repositoryContent .= "            DB::rollBack();\n";
+        $repositoryContent .= "            return \$e->getMessage();\n";
+        $repositoryContent .= "        }\n    }\n}\n";
     }
 
     protected function updateRepositoryServiceProvider($name)
@@ -335,5 +415,142 @@ class CrudGeneratorCommand extends Command
         $repositoryServiceProviderContent = preg_replace($pattern, "public function register() {\n$1$replacement", $repositoryServiceProviderContent, 1);
 
         file_put_contents($repositoryServiceProvider, $repositoryServiceProviderContent);
+    }
+
+    protected function generateIndexViewContent($name)
+    {
+        return "
+<x-layouts.admin title=\"{$name}\">
+
+    <x-ui.breadcumb-admin>
+        <li class=\"breadcrumb-item active\" aria-current=\"page\">{$name}</li>
+    </x-ui.breadcumb-admin>
+
+    <div class=\"row\">
+        <div class=\"col-md-12 grid-margin stretch-card\">
+            <x-ui.base-card>
+                <x-slot name=\"header\">
+                    <x-ui.base-button color=\"primary\" type=\"button\" href=\"{{ route('admin.{$name}.create') }}\">
+                        Tambah {$name}
+                    </x-ui.base-button>
+                </x-slot>
+                <x-ui.datatables>
+                    <x-slot name=\"thead\">
+                        <tr>
+                            <th>No</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </x-slot>
+                    <x-slot name=\"tbody\">
+                        @foreach (\${$name}s as \${$name})
+                            <tr>
+                                <td>{{ \$loop->iteration }}</td>
+                                <td>
+                                    <x-ui.base-button color=\"primary\" type=\"button\"
+                                        href=\"{{ route('admin.{$name}.show', \${$name}->id) }}\">
+                                        Detail
+                                    </x-ui.base-button>
+
+                                    <x-ui.base-button color=\"warning\" type=\"button\"
+                                        href=\"{{ route('admin.{$name}.edit', \${$name}->id) }}\">
+                                        Edit
+                                    </x-ui.base-button>
+
+                                    <form action=\"{{ route('admin.{$name}.destroy', \${$name}->id) }}\" method=\"POST\"
+                                        class=\"d-inline\">
+                                        @csrf
+                                        @method('DELETE')
+                                        <x-ui.base-button color=\"danger\" type=\"submit\" onclick=\"return confirm('Yakin ingin menghapus?')\">
+                                            Hapus
+                                        </x-ui.base-button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </x-slot>
+                </x-ui.datatables>
+            </x-ui.base-card>
+        </div>
+    </div>
+</x-layouts.admin>";
+
+    }
+
+    protected function generateCreateViewContent($name)
+    {
+        return "
+<x-layouts.admin title=\"Tambah {$name}\">
+
+    <x-ui.breadcumb-admin>
+        <li class=\"breadcrumb-item\"><a href=\"{{ route('admin.{$name}.index') }}\">{$name}</a></li>
+        <li class=\"breadcrumb-item active\" aria-current=\"page\">Tambah {$name}</li>
+    </x-ui.breadcumb-admin>
+
+    <div class=\"row\">
+        <div class=\"col-md-12 grid-margin stretch-card\">
+            <x-ui.base-card>
+                <x-slot name=\"header\">
+                    <h4 class=\"card-title\">Tambah {$name}</h4>
+                </x-slot>
+                <form action=\"{{ route('admin.{$name}.store') }}\" method=\"POST\">
+                    @csrf
+                    // Add your form here
+                    <x-ui.base-button color=\"primary\" type=\"submit\">Simpan</x-ui.base-button>
+                </form>
+            </x-ui.base-card>
+        </div>
+    </div>
+</x-layouts.admin>";
+    }
+
+    protected function generateEditViewContent($name)
+    {
+        return "
+<x-layouts.admin title=\"Edit {$name}\">
+
+    <x-ui.breadcumb-admin>
+        <li class=\"breadcrumb-item\"><a href=\"{{ route('admin.{$name}.index') }}\">{$name}</a></li>
+        <li class=\"breadcrumb-item active\" aria-current=\"page\">Edit {$name}</li>
+    </x-ui.breadcumb-admin>
+
+    <div class=\"row\">
+        <div class=\"col-md-12 grid-margin stretch-card\">
+            <x-ui.base-card>
+                <x-slot name=\"header\">
+                    <h4 class=\"card-title\">Edit {$name}</h4>
+                </x-slot>
+                <form action=\"{{ route('admin.{$name}.update', \${$name}->id) }}\" method=\"POST\">
+                    @csrf
+                    @method('PUT')
+                    // Add your form here
+                    <x-ui.base-button color=\"primary\" type=\"submit\">Simpan</x-ui.base-button>
+                </form>
+            </x-ui.base-card>
+        </div>
+    </div>
+</x-layouts.admin>";
+    }
+
+    protected function generateShowViewContent($name)
+    {
+        return "
+<x-layouts.admin title=\"Detail {$name}\">
+
+    <x-ui.breadcumb-admin>
+        <li class=\"breadcrumb-item\"><a href=\"{{ route('admin.{$name}.index') }}\">{$name}</a></li>
+        <li class=\"breadcrumb-item active\" aria-current=\"page\">Detail {$name}</li>
+    </x-ui.breadcumb-admin>
+
+    <div class=\"row\">
+        <div class=\"col-md-12 grid-margin stretch-card\">
+            <x-ui.base-card>
+                <x-slot name=\"header\">
+                    <h4 class=\"card-title\">Detail {$name}</h4>
+                </x-slot>
+                // Add your detail here
+            </x-ui.base-card>
+        </div>
+    </div>
+</x-layouts.admin>";
     }
 }
