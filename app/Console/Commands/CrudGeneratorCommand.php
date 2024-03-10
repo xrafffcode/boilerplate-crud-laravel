@@ -354,6 +354,9 @@ class CrudGeneratorCommand extends Command
 
     protected function generateRepositoryContent($name)
     {
+        $pluralName = Str::plural($name);
+        $varName = Str::lower($pluralName);
+
         $repositoryContent = "<?php\n\nnamespace App\Repositories;\n\nuse App\Interfaces\\{$name}RepositoryInterface;\n";
         $repositoryContent .= "use App\Models\\{$name};\n";
         $repositoryContent .= "use Illuminate\Support\Facades\DB;\n\n";
@@ -365,9 +368,9 @@ class CrudGeneratorCommand extends Command
         $repositoryContent .= "    public function create{$name}(array \$data)\n    {\n";
         $repositoryContent .= "        DB::beginTransaction();\n";
         $repositoryContent .= "        try {\n";
-        $repositoryContent .= "            $name = {$name}::create(\$data);\n";
+        $repositoryContent .= "           \${$varName} = {$name}::create(\$data);\n";
         $repositoryContent .= "            DB::commit();\n";
-        $repositoryContent .= "            return $name;\n";
+        $repositoryContent .= "            return \${$varName};\n";
         $repositoryContent .= "        } catch (\Exception \$e) {\n";
         $repositoryContent .= "            DB::rollBack();\n";
         $repositoryContent .= "            return \$e->getMessage();\n";
@@ -375,10 +378,10 @@ class CrudGeneratorCommand extends Command
         $repositoryContent .= "    public function update{$name}(array \$data, string \$id)\n    {\n";
         $repositoryContent .= "        DB::beginTransaction();\n";
         $repositoryContent .= "        try {\n";
-        $repositoryContent .= "            \${$name} = {$name}::findOrFail(\$id);\n";
-        $repositoryContent .= "            \${$name}->update(\$data);\n";
+        $repositoryContent .= "           \${$varName} = {$name}::findOrFail(\$id);\n";
+        $repositoryContent .= "           \${$varName}->update(\$data);\n";
         $repositoryContent .= "            DB::commit();\n";
-        $repositoryContent .= "            return \${$name};\n";
+        $repositoryContent .= "            return \${$varName};\n";
         $repositoryContent .= "        } catch (\Exception \$e) {\n";
         $repositoryContent .= "            DB::rollBack();\n";
         $repositoryContent .= "            return \$e->getMessage();\n";
@@ -394,6 +397,7 @@ class CrudGeneratorCommand extends Command
         $repositoryContent .= "            return \$e->getMessage();\n";
         $repositoryContent .= "        }\n    }\n}\n";
 
+        return $repositoryContent;
     }
 
     protected function updateRepositoryServiceProvider($name)
@@ -437,6 +441,7 @@ class CrudGeneratorCommand extends Command
                         @foreach (\${$name}s as \${$name})
                             <tr>
                                 <td>{{ \$loop->iteration }}</td>
+                                {{-- Add your columns here --}}
                                 <td>
                                     <x-ui.base-button color=\"primary\" type=\"button\"
                                         href=\"{{ route('admin.{$name}.show', \${$name}->id) }}\">
@@ -486,7 +491,7 @@ class CrudGeneratorCommand extends Command
                 </x-slot>
                 <form action=\"{{ route('admin.{$name}.store') }}\" method=\"POST\">
                     @csrf
-                    // Add your form here
+                  {{-- Add your form here --}}
                     <x-ui.base-button color=\"primary\" type=\"submit\">Simpan</x-ui.base-button>
                 </form>
             </x-ui.base-card>
@@ -514,7 +519,7 @@ class CrudGeneratorCommand extends Command
                 <form action=\"{{ route('admin.{$name}.update', \${$name}->id) }}\" method=\"POST\">
                     @csrf
                     @method('PUT')
-                    // Add your form here
+                    {{-- Add your form here --}}
                     <x-ui.base-button color=\"primary\" type=\"submit\">Simpan</x-ui.base-button>
                 </form>
             </x-ui.base-card>
@@ -539,7 +544,7 @@ class CrudGeneratorCommand extends Command
                 <x-slot name=\"header\">
                     <h4 class=\"card-title\">Detail {$name}</h4>
                 </x-slot>
-                // Add your detail here
+                {{-- Add your detail here --}}
             </x-ui.base-card>
         </div>
     </div>
