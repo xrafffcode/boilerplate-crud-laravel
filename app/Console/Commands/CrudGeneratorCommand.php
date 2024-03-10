@@ -354,14 +354,6 @@ class CrudGeneratorCommand extends Command
 
     protected function generateRepositoryContent($name)
     {
-        // return "<?php\n\nnamespace App\Repositories;\n\nuse App\Interfaces\\{$name}RepositoryInterface;\n\n" .
-        //     "class {$name}Repository implements {$name}RepositoryInterface\n{\n" .
-        //     "    public function getAll{$name}()\n    {\n        // Add your code here\n    }\n\n" .
-        //     "    public function get{$name}ById(string \$id)\n    {\n        // Add your code here\n    }\n\n" .
-        //     "    public function create{$name}(array \$data)\n    {\n        // Add your code here\n    }\n\n" .
-        //     "    public function update{$name}(array \$data, string \$id)\n    {\n        // Add your code here\n    }\n\n" .
-        //     "    public function delete{$name}(string \$id)\n    {\n        // Add your code here\n    }\n}\n";
-
         $repositoryContent = "<?php\n\nnamespace App\Repositories;\n\nuse App\Interfaces\\{$name}RepositoryInterface;\n";
         $repositoryContent .= "use App\Models\\{$name};\n";
         $repositoryContent .= "use Illuminate\Support\Facades\DB;\n\n";
@@ -383,10 +375,10 @@ class CrudGeneratorCommand extends Command
         $repositoryContent .= "    public function update{$name}(array \$data, string \$id)\n    {\n";
         $repositoryContent .= "        DB::beginTransaction();\n";
         $repositoryContent .= "        try {\n";
-        $repositoryContent .= "            $name = {$name}::findOrFail(\$id);\n";
-        $repositoryContent .= "            $name->update(\$data);\n";
+        $repositoryContent .= "            \${$name} = {$name}::findOrFail(\$id);\n";
+        $repositoryContent .= "            \${$name}->update(\$data);\n";
         $repositoryContent .= "            DB::commit();\n";
-        $repositoryContent .= "            return $name;\n";
+        $repositoryContent .= "            return \${$name};\n";
         $repositoryContent .= "        } catch (\Exception \$e) {\n";
         $repositoryContent .= "            DB::rollBack();\n";
         $repositoryContent .= "            return \$e->getMessage();\n";
@@ -394,14 +386,14 @@ class CrudGeneratorCommand extends Command
         $repositoryContent .= "    public function delete{$name}(string \$id)\n    {\n";
         $repositoryContent .= "        DB::beginTransaction();\n";
         $repositoryContent .= "        try {\n";
-        $repositoryContent .= "            $name = {$name}::findOrFail(\$id);\n";
-        $repositoryContent .= "            $name->delete();\n";
+        $repositoryContent .= "            {$name}::findOrFail(\$id)->delete();\n";
         $repositoryContent .= "            DB::commit();\n";
-        $repositoryContent .= "            return $name;\n";
+        $repositoryContent .= "            return true;\n";
         $repositoryContent .= "        } catch (\Exception \$e) {\n";
         $repositoryContent .= "            DB::rollBack();\n";
         $repositoryContent .= "            return \$e->getMessage();\n";
         $repositoryContent .= "        }\n    }\n}\n";
+
     }
 
     protected function updateRepositoryServiceProvider($name)
