@@ -33,6 +33,8 @@ class CrudGeneratorCommand extends Command
         $this->createTest();
         $this->createFactory();
         $this->createViews();
+        $this->addRoutes();
+        $this->addSidebarMenu();
 
         $this->comment('Playground created successfully. Happy coding hugo! 🚀');
     }
@@ -549,5 +551,34 @@ class CrudGeneratorCommand extends Command
         </div>
     </div>
 </x-layouts.admin>";
+    }
+
+    protected function addRoutes()
+    {
+        $name = $this->argument('name');
+        $name = Str::kebab($name);
+        $routes = base_path('routes/admin.php');
+
+        $routeContent = "\nRoute::resource('{$name}', App\Http\Controllers\Web\Admin\\{$name}Controller::class);";
+
+        file_put_contents($routes, $routeContent, FILE_APPEND);
+    }
+
+    protected function addSidebarMenu()
+    {
+        $name = $this->argument('name');
+        $name = Str::kebab($name);
+
+        $sidebar = resource_path('views/components/ui/admin-sidebar.blade.php');
+
+        $sidebarContent = "\n<li class=\"nav-item {{ request()->is('admin/{$name}') ? ' active' : '' }}\">\n";
+        $sidebarContent .= "    <a href=\"{{ route('admin.{$name}.index') }}\" class=\"nav-link\">\n";
+        $sidebarContent .= "        <i class=\"link-icon\" data-feather=\"list\"></i>\n";
+        $sidebarContent .= "        <span class=\"link-title\">{$name}</span>\n";
+        $sidebarContent .= "    </a>\n";
+        $sidebarContent .= "</li>\n";
+
+
+        file_put_contents($sidebar, $sidebarContent, FILE_APPEND);
     }
 }
